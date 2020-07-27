@@ -1,3 +1,4 @@
+import datetime
 from flask_graphql_auth import create_access_token, create_refresh_token, mutation_jwt_refresh_token_required, \
     get_jwt_identity, mutation_jwt_required
 from graphene import ObjectType, List, Mutation, String, Field, Boolean, Int
@@ -22,6 +23,7 @@ from models.ProfilePicture import ProfilePicture as ProfilePictureModel
 from models.Checkpoint import Checkpoint as CheckpointModel
 from models.PictureCheckpoint import PictureCheckpoint as PictureCheckpointModel
 from models.ObjectCheckpoint import ObjectCheckpoint as ObjectCheckpointModel
+
 """
 These are the mutations available in the App API. 
 Tasks: - account creation 
@@ -188,6 +190,7 @@ class ChangeUsername(Mutation):
         returns Null and False if username already exists
         returns empty value for ok if token is invalid
     """
+
     class Arguments:
         token = String(required=True)
         username = String(required=True)
@@ -261,7 +264,7 @@ class ChooseProfilePicture(Mutation):
                 token, String, valid jwt access token
                 picture_id, String, valid object id of the ProfilePicture object on the server
         if successful returns true
-        if unsuccessful because the picture id was invalid returns False
+        if unsuccessful because the picture id was invalid or picture was not unlocked returns False
         if unsuccessful because the token was invalid returns empty value
         is successful if chosen picture is current picture
     """
@@ -280,9 +283,22 @@ class ChooseProfilePicture(Mutation):
             return ChooseProfilePicture(ok=BooleanField(boolean=False))
         else:
             picture = ProfilePictureModel.objects.get(id=picture_id)
-            user.update(set__profile_picture=picture)
-            user.save()
-            return ChooseProfilePicture(ok=BooleanField(boolean=True))
+            if not picture.locked:
+                user.update(set__profile_picture=picture)
+                user.save()
+                user.reload()
+                return ChooseProfilePicture(ok=BooleanField(boolean=True))
+            else:
+                pics = []
+                for badge in user.badges:
+                    pics.append(badge.unlocked_picture)
+                if picture in pics:
+                    user.update(set__profile_picture=picture)
+                    user.save()
+                    user.reload()
+                    return ChooseProfilePicture(ok=BooleanField(boolean=True))
+                else:
+                    return ChooseProfilePicture(ok=BooleanField(boolean=False))
 
 
 class DeleteAccount(Mutation):
@@ -597,6 +613,7 @@ class CreateCheckpoint(Mutation):
         if unsuccessful because the tour did not exist or the caller did not own the tour returns Null and False
         if unsuccessful because the token was invalid returns an empty value for ok
     """
+
     class Arguments:
         token = String(required=True)
         tour_id = String(required=True)
@@ -656,12 +673,13 @@ class CreatePictureCheckpoint(Mutation):
             returns Null and False
         if unsuccessful because the token was invalid returns an empty value for ok
     """
+
     class Arguments:
         token = String(required=True)
         tour_id = String(required=True)
         picture_id = String()
-        #picture = Upload()
-        #picture_description = String()
+        # picture = Upload()
+        # picture_description = String()
         text = String()
         show_text = Boolean()
         show_picture = Boolean()
@@ -682,8 +700,8 @@ class CreatePictureCheckpoint(Mutation):
         user = UserModel.objects.get(username=get_jwt_identity())
         if not user == tour.owner:
             return CreatePictureCheckpoint(checkpoint=None, ok=BooleanField(boolean=False))
-        #picture = kwargs.get('picture', None)
-        #picture_description = kwargs.get('picture_description', None)
+        # picture = kwargs.get('picture', None)
+        # picture_description = kwargs.get('picture_description', None)
 
         # get optional arguments
         picture_id = kwargs.get('picture_id', None)
@@ -706,13 +724,13 @@ class CreatePictureCheckpoint(Mutation):
                 checkpoint.save()
                 return CreatePictureCheckpoint(checkpoint=checkpoint, ok=BooleanField(boolean=True))
         return CreatePictureCheckpoint(checkpoint=None, ok=BooleanField(boolean=False))
-        #if picture is not None:
-            #x = PictureModel(description=picture_description)
-            #x.picture.put(picture, content_type='image/png')
-            #x.save()
-            #checkpoint = PictureCheckpointModel(picture=x, tour=tour, text=text, index=current_index)
-            #checkpoint.save()
-            #return CreatePictureCheckpoint(checkpoint=checkpoint, ok=BooleanField(boolean=True))
+        # if picture is not None:
+        # x = PictureModel(description=picture_description)
+        # x.picture.put(picture, content_type='image/png')
+        # x.save()
+        # checkpoint = PictureCheckpointModel(picture=x, tour=tour, text=text, index=current_index)
+        # checkpoint.save()
+        # return CreatePictureCheckpoint(checkpoint=checkpoint, ok=BooleanField(boolean=True))
 
 
 class CreateObjectCheckpoint(Mutation):
@@ -733,6 +751,7 @@ class CreateObjectCheckpoint(Mutation):
             tour reference did not exist
             referenced object did not exist
     """
+
     class Arguments:
         token = String(required=True)
         tour_id = String(required=True)
@@ -741,7 +760,6 @@ class CreateObjectCheckpoint(Mutation):
         show_text = Boolean()
         show_picture = Boolean()
         show_details = Boolean()
-
 
     ok = Field(ProtectedBool)
     checkpoint = Field(lambda: ObjectCheckpoint)
@@ -789,6 +807,7 @@ class CreateAnswer(Mutation):
             user is not member of the tour the question is in
             question reference was invalid
     """
+
     class Arguments:
         token = String(required=True)
         answer = String(required=True)
@@ -867,9 +886,9 @@ class CreateMCAnswer(Mutation):
             if user not in tour.users:
                 return CreateAnswer(answer=None, ok=BooleanField(boolean=False), correct=0)
             # creating and submitting a new answer
-            #if not MCAnswerModel.objects(question=question, user=user):
-                # number of answers may not be more than permitted by the question
-            #if len(answer) <= question.max_choices:
+            # if not MCAnswerModel.objects(question=question, user=user):
+            # number of answers may not be more than permitted by the question
+            # if len(answer) <= question.max_choices:
             correct = 0
             correct_answers = question.correct_answers
             for single_answer in answer:
@@ -883,8 +902,8 @@ class CreateMCAnswer(Mutation):
             answer_.save()
             answer_.reload()
             return CreateMCAnswer(answer=answer_, ok=BooleanField(boolean=True), correct=correct)
-            #else:
-                #return CreateMCAnswer(answer=None, ok=BooleanField(boolean=False), correct=-1)
+            # else:
+            # return CreateMCAnswer(answer=None, ok=BooleanField(boolean=False), correct=-1)
         else:
             return CreateMCAnswer(answer=None, ok=BooleanField(boolean=False), correct=0)
 
@@ -908,6 +927,7 @@ class CreateQuestion(Mutation):
             user did not own the tour
             an object referenced in linked_objects did not exist
     """
+
     class Arguments:
         token = String(required=True)
         linked_objects = List(of_type=String)
@@ -989,6 +1009,7 @@ class CreateMCQuestion(Mutation):
             user did not own the tour
             an object referenced in linked_objects did not exist
     """
+
     class Arguments:
         token = String(required=True)
         linked_objects = List(of_type=String)
@@ -1284,6 +1305,7 @@ class MoveCheckpoint(Mutation):
         if successful returns the updated checkpoint and True
         if unsuccessful because the id was invalid or the user is not the owner of the tour returns Null and False
     """
+
     class Arguments:
         token = String(required=True)
         checkpoint_id = String(required=True)
@@ -1359,6 +1381,7 @@ class DeleteCheckpoint(Mutation):
         returns False if token owner was not the owner of the tour
         IS SUCCESSFUL if the checkpoint does not exist
     """
+
     class Arguments:
         token = String(required=True)
         checkpoint_id = String(required=True)
@@ -1437,7 +1460,6 @@ class EditCheckpoint(Mutation):
         show_text = Boolean()
         show_picture = Boolean()
         show_details = Boolean()
-
 
     checkpoint = Field(lambda: CheckpointUnion)
     ok = Field(ProtectedBool)
@@ -1543,6 +1565,91 @@ class EditCheckpoint(Mutation):
             return EditCheckpoint(checkpoint=checkpoint, ok=BooleanField(boolean=True))
 
 
+class DeleteTour(Mutation):
+    """
+        Allows the owner of a Tour to delete it. Also deletes all associated checkpoints and answers linked to questions
+        Parameters:
+            token, String, valid jwt access token of the tour owner
+            tour_id, String, document id of the tour to delete
+        returns True if successful, notably returns true if tour did not exist
+        returns False if user is not the owner of the tour
+        returns empty value if token is invalid
+    """
+
+    class Arguments:
+        token = String(required=True)
+        tour_id = String(required=True)
+
+    ok = Field(ProtectedBool)
+
+    @classmethod
+    @mutation_jwt_required
+    def mutate(cls, _, info, tour_id):
+        user = UserModel.objects.get(username=get_jwt_identity())
+        if TourModel.objects(id=tour_id):
+            tour = TourModel.objects.get(id=tour_id)
+            if tour.owner == user:
+                tour.delete()
+                return DeleteTour(ok=BooleanField(boolean=True))
+            return DeleteTour(ok=BooleanField(boolean=False))
+        return DeleteTour(ok=BooleanField(boolean=True))
+
+
+class UpdateTour(Mutation):
+    """
+        Update a Tour object. Allows the tour owner to change name difficulty and description.
+        Parameters:
+                token, String, valid jwt access token of the tour owner
+                tour_id, String, document id of the tour
+                name, String, new name for the tour
+                description, String, new description for the tour
+                difficulty, String, new difficulty of the tour. forced to be in a range of 1-5
+        returns the updated tour object and True if successful
+        returns None and False if tour did not exist or user did not own the tour
+        returns {} if token was invalid
+    """
+
+    class Arguments:
+        token = String(required=True)
+        tour_id = String(required=True)
+        difficulty = Int()
+        name = String()
+        description = String()
+
+    tour = Field(lambda: Tour)
+    ok = Field(ProtectedBool)
+
+    @classmethod
+    @mutation_jwt_required
+    def mutate(cls, _, info, tour_id, **kwargs):
+        user = UserModel.objects.get(username=get_jwt_identity())
+        if TourModel.objects(id=tour_id):
+            tour = TourModel.objects.get(id=tour_id)
+            if user == tour.owner:
+                name = kwargs.get('name', None)
+                difficulty = kwargs.get('difficulty', None)
+                description = kwargs.get('description', None)
+                if name is not None:
+                    tour.update(set__name=name)
+                if difficulty is not None:
+                    # force difficulty to be on the scale
+                    if difficulty < 1:
+                        difficulty = 1
+                    if difficulty > 5:
+                        difficulty = 5
+                    tour.update(set__difficulty=difficulty)
+                if description is not None:
+                    tour.update(set__description=description)
+                tour.update(set__lastEdit=datetime.datetime.now)
+                tour.save()
+                tour.reload()
+                return UpdateTour(tour=tour, ok=BooleanField(boolean=True))
+            else:
+                return UpdateTour(tour=None, ok=BooleanField(boolean=False))
+        else:
+            return UpdateTour(tour=None, ok=BooleanField(boolean=False))
+
+
 class Mutation(ObjectType):
     create_user = CreateUser.Field()
     auth = Auth.Field()
@@ -1574,3 +1681,5 @@ class Mutation(ObjectType):
     move_checkpoint = MoveCheckpoint.Field()
     delete_checkpoint = DeleteCheckpoint.Field()
     change_username = ChangeUsername.Field()
+    delete_tour = DeleteTour.Field()
+    update_tour = UpdateTour.Field()

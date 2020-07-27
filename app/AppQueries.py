@@ -247,6 +247,32 @@ class Query(ObjectType):
     available_profile_pictures = List(String, token=String())
     """ returns all available badges """
     available_badges = List(Badge, token=String())
+    """ returns all profile pictures that are available to anyone"""
+    free_profile_pictures = List(String, token=String())
+    """ returns all profile pictures that are available to the current user including previously locked ones"""
+    my_profile_pictures = List(String, token=String())
+
+    @classmethod
+    @query_jwt_required
+    def resolve_free_profile_pictures(cls, _, info):
+        ids = []
+        for pic in ProfilePictureModel.objects.all():
+            if not pic.locked:
+                ids.append(pic.id)
+        return ids
+
+    @classmethod
+    @query_jwt_required
+    def resolve_my_profile_pictures(cls, _, info):
+        ids = []
+        pics = []
+        for badge in UserModel.objects.get(username=get_jwt_identity()).badges:
+            pics.append(badge.unlocked_picture)
+        for pic in ProfilePictureModel.objects.all():
+            if not pic.locked or pic in pics:
+                ids.append(pic.id)
+        return ids
+
 
     @classmethod
     @query_jwt_required

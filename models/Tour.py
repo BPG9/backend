@@ -22,6 +22,6 @@ class Tour(Document):
     # scale is also enforced upon creation
     difficulty = IntField(required=True, min_value=1, max_value=5)
     description = StringField()
-    creation = DateTimeField(default=datetime.datetime.utcnow)
+    lastEdit = DateTimeField(default=datetime.datetime.now)
     # this is managed by checkpoint creation and modification methods
     current_checkpoints = IntField(default=0)

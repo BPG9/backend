@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+ <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+<head>
+    <title>Geschichte Vernetzt Report</title>
+</head>
+<body>
+    <ul id="navigation">
+    {% for item in navigation %}
+        <li><a href="{{ item.href }}">{{ item.caption }}</a></li>
+    {% endfor %}
+    </ul>
+    <h3>Answer Report for question {{question_id}} generated {{day}}/{{month}}/{{year}} {{hour}}:{{minute}} by {{username}}</h3>
+    <h4> Tour {{tourname}} by {{ownername}} </h4>
+    <h5> Question: {{question}} </h5>
+    <table>
+     <tr>
+        <th>User</th>
+        <th>Answer</th>
+        <th>Correct Answer</th>
+     </tr>
+     {% for answer in answers %}
+        <tr>
+            <td> {{answer[0]}}
+            <td> {{answer[1]}}
+            <td> {{answer[2]}}
+         </tr>
+     {% endfor %}
+     </table>
+
+
+</body>
+</html>

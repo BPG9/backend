@@ -13,3 +13,4 @@ ACCESS_EXP_LENGTH = 20
 SECRET_KEY = "2HyFpwHAwFkUUn"
 """Name of the file that contains the app factory function"""
 FLASK_APP = "__init__.py"
+STATIC_FOLDER = "static"

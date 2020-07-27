@@ -10,3 +10,4 @@ class ProfilePicture(Document):
     meta = {'db_alias': 'file',
             'collection': 'profilepicture'}
     picture = FileField(content_type='image/jpeg')
+    locked = BooleanField(default=False)

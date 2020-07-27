@@ -28,7 +28,9 @@ def object_ingest(picture_dict):
                           document id of the Picture object in the database holding that file
     """
     # file path
-    file_name = 'data/objects.xlsx'
+    dir_path = os.path.abspath(__file__)
+    dir_path = os.path.dirname(os.path.dirname(dir_path))
+    file_name = os.path.join(dir_path, 'data/objects.xlsx')
     # reading data as a pandas dataframe. needs dependencies pandas and xlrd to read excel data
     df = pd.read_excel(file_name, index_col=0)
     # iterating through objects

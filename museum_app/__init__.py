@@ -23,7 +23,7 @@ def create_app(config_object='museum_app.settings'):
         view_func=FileUploadGraphQLView.as_view(
             'web',
             schema=web_schema,
-            graphiql=False
+            graphiql=True
         )
     )
     app.add_url_rule(
@@ -31,7 +31,7 @@ def create_app(config_object='museum_app.settings'):
         view_func=FileUploadGraphQLView.as_view(
             'app',
             schema=app_schema,
-            graphiql=False
+            graphiql=True
         )
     )
     try:

@@ -10,3 +10,5 @@ models/__pycache__/
 server_packages.txt
 
 data/.~lock.objects.xlsx#
+
+venv/

@@ -23,7 +23,7 @@ class User(Document):
     badges = ListField(ReferenceField(document_type=Badge, reverse_delete_rule=PULL))
     # TODO: possibly add a default picture here. Would have to know document id of the ProfilePicture on the server
     #       to use as default. Seems unsafe to hardcode this if database changes though.
-    #       Could maybe also register a new delete rule that resets it to a default picture if the chose one is deleted.
+    #       Could maybe also register a new delete rule that resets it to a default picture if the chosen one is deleted
     profile_picture = ReferenceField(document_type=ProfilePicture, reverse_delete_rule=NULLIFY)
     # initialized with all badges that exist upon creation. when new badges are created they are added for all users
     badge_progress = DictField(default=badge_dict)
