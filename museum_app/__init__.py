@@ -4,7 +4,7 @@ import os
 from .extensions import mongo
 from app.Schema import web_schema, app_schema
 from graphene_file_upload.flask import FileUploadGraphQLView
-from museum_app.file import fileBP
+from .file import fileBP
 from flask_jwt_extended import JWTManager
 
 

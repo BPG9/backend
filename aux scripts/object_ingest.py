@@ -117,7 +117,7 @@ def picture_ingest():
     """ Ingestion for object pictures. Allows ingestion of pictures in bulk. Only creates picture objects and does not
         link them to MuseumObject entries. Pictures are assumed to be located in data/pictures relative to the location
          of this script and saved in jpg format."""
-    picture_directory = 'data/pictures'
+    picture_directory = '../data/pictures'
     # defining output var
     id_dict = {}
     # iterating through all files in the directory
