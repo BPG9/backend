@@ -27,19 +27,22 @@ td {
         <li><a href="{{ item.href }}">{{ item.caption }}</a></li>
     {% endfor %}
     </ul>
-    <h3>Answer Report for user {{target}} generated {{day}}/{{month}}/{{year}} {{hour}}:{{minute}} by {{username}}</h3>
-    <h4> Tour {{tourname}} by {{ownername}} </h4>
+    <h3> Antworten von Benutzer {{target}} </h3>
+    <h4> Fragen aus dem Rundgang {{tourname}} von {{ownername}} </h4>
+    <h4>generiert am {{day}}/{{month}}/{{year}} um {{hour}}:{{minute}} von {{username}}</h4>
     <table>
      <tr>
-        <th>Question</th>
-        <th>Answer</th>
-        <th>Correct Answer</th>
+        <th>Frage</th>
+        <th>Bezugsobjekt</th>
+        <th>Antwort</th>
+        <th>Richtige Antwort</th>
      </tr>
      {% for answer in answers %}
         <tr>
             <td> {{answer[0]}}
             <td> {{answer[1]}}
             <td> {{answer[2]}}
+            <td> {{answer[3]}}
          </tr>
      {% endfor %}
      </table>

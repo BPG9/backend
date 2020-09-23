@@ -1,8 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 <head>
     <title>Geschichte Vernetzt Report</title>
+    <style>
+table, th, tr, td {
+  border:1px solid black;
+}
+table {
+  border-collapse: collapse;
+  width:100%;
+}
+th {
+  height:20px;
+  text-align: center;
+}
+td {
+  vertical-align: top;
+  height:50px;
+  text-align: left;
+}
+</style>
 </head>
 <body>
     <ul id="navigation">
@@ -10,14 +27,15 @@
         <li><a href="{{ item.href }}">{{ item.caption }}</a></li>
     {% endfor %}
     </ul>
-    <h3>Answer Report for question {{question_id}} generated {{day}}/{{month}}/{{year}} {{hour}}:{{minute}} by {{username}}</h3>
-    <h4> Tour {{tourname}} by {{ownername}} </h4>
-    <h5> Question: {{question}} </h5>
+    <h3>Antworten aller Teilnehmer des Rundgangs {{tourname}} von {{ownername}}</h3>
+    <h4>generiert am {{day}}/{{month}}/{{year}} um {{hour}}:{{minute}} von {{username}}</h4>
+    <h5> Frage: {{question}} </h5>
+    <h5> Bezugsobjekt: {{museumObject}} </h5>
     <table>
      <tr>
-        <th>User</th>
-        <th>Answer</th>
-        <th>Correct Answer</th>
+        <th>Benutzer</th>
+        <th>Antwort</th>
+        <th>Richtige Antwort</th>
      </tr>
      {% for answer in answers %}
         <tr>
