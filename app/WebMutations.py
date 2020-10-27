@@ -561,7 +561,7 @@ class AcceptReview(Mutation):
             if TourModel.objects(id=tour_id):
                 tour = TourModel.objects.get(id=tour_id)
                 featured_tour = TourModel(owner=UserModel.objects.get(username=get_jwt_identity()),
-                                          status='featured',
+                                          status="featured",
                                           difficulty=tour.difficulty,
                                           name=tour.name,
                                           description=tour.description,
@@ -570,9 +570,8 @@ class AcceptReview(Mutation):
                                           current_checkpoints=tour.current_checkpoints)
                 featured_tour.save()
                 featured_tour.reload()
-                print("out")
+
                 for checkpoint in CheckpointModel.objects(tour=tour):
-                    print("in")
                     cp = deepcopy(checkpoint)
                     cp.tour = featured_tour
                     cp.id = None
